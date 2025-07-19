@@ -1,39 +1,39 @@
-# Quantum-Enhanced Portfolio Optimization using QAOA with Factor Models
+# Quantum-Enhanced Portfolio Optimization: A Hybrid Factor-QAOA Approach
 
-## Table of Contents
+## Team Name
+QuantumQuantfinanceIIST
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [Methodology](#methodology)
-  - [Factor Model for Covariance Estimation: Enhancing Robustness](#factor-model-for-covariance-estimation-enhancing-robustness)
-  - [Portfolio Optimization as a QUBO Problem: Bridging Classical and Quantum](#portfolio-optimization-as-a-qubo-problem-bridging-classical-and-quantum)
-  - [QAOA Implementation with PennyLane: The Quantum Engine](#qaoa-implementation-with-pennylane-the-quantum-engine)
-  - [Hyperparameter Tuning: Optimizing the Optimizer](#hyperparameter-tuning-optimizing-the-optimizer)
-- [Installation Guide](#installation-guide)
-- [Usage Instructions](#usage-instructions)
-- [Configuration and Customization](#configuration-and-customization)
-- [Understanding the Results and Analysis](#understanding-the-results-and-analysis)
-- [Future Enhancements and Research Directions](#future-enhancements-and-research-directions)
-- [Contributing to the Project](#contributing-to-the-project)
-- [License Information](#license-information)
-- [Acknowledgements](#acknowledgements)
+## Team Members
+* **[Saatwik chatkara]** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
+* **[Devang Narula]** - WISER Enrollment ID: [Your WISER ID 2]
+* **[Mohamed Armoon Shaliq]** - WISER Enrollment ID: [Your WISER ID 3]
 
-## Introduction
+## Project Summary (Approx. 500 words)
 
-In the complex landscape of financial markets, **portfolio optimization** stands as a cornerstone for investors aiming to balance risk and return. Traditional methods often rely on historical data to estimate crucial parameters like expected returns and, more critically, the covariance matrix. However, historical covariance matrices are notoriously noisy, unstable, and prone to estimation errors, especially when dealing with a large number of assets or limited data. This inherent noisiness can lead to suboptimal or even fragile portfolios that underperform in real-world scenarios.
+The traditional paradigm of portfolio optimization, while foundational in finance, faces significant hurdles when applied to real-world market data. Estimating accurate expected returns and, more critically, the covariance matrix from historical data is notoriously challenging due to market noise, non-stationarity, and the "curse of dimensionality." These issues often lead to unstable portfolio weights and suboptimal investment performance. Our project tackles these limitations by introducing a robust, hybrid quantum-classical framework for portfolio selection, specifically addressing the common financial constraint of **cardinality** (selecting a fixed number of assets).
 
-This project introduces a **hybrid quantum-classical approach** designed to tackle these challenges head-on. Our methodology integrates two powerful concepts:
-1.  **Classical Factor Models for Enhanced Covariance Estimation:** By distilling the underlying drivers of asset returns into a few principal factors, we construct a more stable and robust covariance matrix. This significantly reduces the noise inherent in purely historical estimates, leading to more reliable risk assessments.
-2.  **Quantum Approximate Optimization Algorithm (QAOA) for Portfolio Selection:** We frame the portfolio selection problem, specifically with a **cardinality constraint** (i.e., selecting a predetermined number of assets), as a Quadratic Unconstrained Binary Optimization (QUBO) problem. QAOA, a promising algorithm for near-term quantum computers (NISQ devices), is then employed to find approximate solutions to this challenging optimization problem.
+Our methodology begins with sophisticated classical data pre-processing. Instead of relying solely on the raw empirical covariance matrix, which is highly susceptible to estimation error, we employ a **Principal Component Analysis (PCA)-based factor model**. This model posits that asset returns are driven by a smaller set of underlying common factors, plus idiosyncratic (asset-specific) risk. By extracting these principal components and reconstructing the covariance matrix as $\Sigma = B \Sigma_F B^T + D$, where $B$ represents factor loadings, $\Sigma_F$ is the factor covariance, and $D$ captures specific risk, we achieve a more stable, less noisy, and financially interpretable risk model. This step is crucial for providing cleaner input to the subsequent optimization phase.
 
-The overarching goal of this project is to showcase the potential of quantum computing to enhance financial decision-making by demonstrating a complete pipeline: from sophisticated classical data pre-processing to the application of a quantum algorithm and subsequent hyperparameter optimization.
+The core portfolio selection problem is then formulated as a **Quadratic Unconstrained Binary Optimization (QUBO)** problem. Our objective function integrates three critical financial considerations: portfolio risk (variance), expected return, and a penalty for deviating from the target number of selected assets ($K$). The QUBO matrix, $Q$, encapsulates these terms, transforming the financial problem into a format directly compatible with quantum optimization algorithms. The binary nature of the QUBO, where each variable $x_i \in \{0, 1\}$ signifies asset inclusion or exclusion, inherently addresses the cardinality constraint effectively.
+
+For solving this QUBO, we leverage the **Quantum Approximate Optimization Algorithm (QAOA)**, a leading candidate for near-term quantum computers (NISQ devices). Implemented using PennyLane, our QAOA circuit comprises alternating layers of a problem-specific Cost Hamiltonian (derived from the QUBO) and a universal Mixer Hamiltonian. The goal of QAOA is to variationally find optimal quantum gate parameters (angles $\gamma$ and $\beta$) that drive the quantum state towards a superposition where the amplitudes of optimal classical solutions are significantly amplified. We use the high-performance `lightning.qubit` simulator, configured for both exact expectation value calculations during optimization and shot-based sampling for final solution extraction.
+
+A critical aspect of QAOA's practical application is its sensitivity to **hyperparameters**. We've implemented a systematic grid search to fine-tune key parameters: the risk aversion coefficient ($q$), the cardinality constraint penalty ($\lambda$), the number of QAOA layers ($p$), and the classical optimizer's learning rate (`stepsize`). For each hyperparameter combination, multiple QAOA optimization runs are performed to mitigate local minima issues, and the best-performing set of quantum parameters is used to sample asset combinations. The sampled bitstrings are then evaluated, and the portfolio yielding the highest Sharpe Ratio (annualized return per unit of risk) is identified as the optimal solution for that particular hyperparameter set.
+
+Finally, our project provides comprehensive analytical tools. We compare the QAOA-derived optimal portfolio's performance (Sharpe Ratio, return, risk) against a classical minimum variance benchmark, offering insights into the quantum approach's potential advantages. Visualizations, including portfolio weight allocation charts and bitstring distribution plots, further aid in understanding the generated solutions. This hybrid framework offers a robust and adaptable pathway towards more sophisticated, quantum-accelerated financial decision-making, particularly in areas requiring combinatorial optimization.
+
+## Project Presentation Deck
+
+A detailed presentation covering the project's background, methodology, implementation, results, and future work is available here:
+[Link to Project Presentation Deck (e.g., Google Slides, PDF, etc.)]
+*(Please replace this placeholder with the actual link to your presentation file or online deck.)*
 
 ## Features
 
 This project provides a comprehensive toolkit for quantum-enhanced portfolio optimization:
 
 * **Automated Financial Data Ingestion:** Seamlessly downloads historical adjusted close prices for specified Exchange-Traded Funds (ETFs) or stocks using the `yfinance` library, providing a flexible data foundation.
-* **Robust Factor Model Implementation:** Leverages Principal Component Analysis (PCA) to identify latent risk factors in asset returns. This allows for the construction of a more stable and less noisy covariance matrix, crucial for reliable portfolio optimization.
+* **Robust Factor Model Implementation:** Leverages Principal Component Analysis (PCA) to identify latent risk factors in asset returns. This allows for the construction of a more stable and less noisy covariance matrix, crucial for reliable risk assessment.
 * **Classical Portfolio Optimization Benchmark:** Includes a classical minimum variance portfolio optimization using `scipy.optimize`, serving as a baseline to evaluate the performance of the quantum-derived solutions.
 * **QUBO Problem Formulation:** Accurately translates the combined objectives of risk minimization, return maximization, and cardinality constraint enforcement into a QUBO matrix, making the problem amenable to quantum solvers.
 * **PennyLane-Powered QAOA Core:** Implements the Quantum Approximate Optimization Algorithm using PennyLane, a leading framework for quantum machine learning. This includes the construction of the QAOA cost and mixer Hamiltonians, and the variational quantum circuit.
@@ -45,7 +45,7 @@ This project provides a comprehensive toolkit for quantum-enhanced portfolio opt
 
 ### Factor Model for Covariance Estimation: Enhancing Robustness
 
-The foundation of any robust portfolio optimization lies in an accurate and stable estimate of the asset covariance matrix ($\Sigma$). Traditional empirical covariance matrices, directly calculated from historical returns, suffer from significant noise, especially when the number of assets approaches or exceeds the number of historical observations. This can lead to volatile optimization results and portfolios that are not truly diversified.
+The foundation of any robust portfolio optimization lies in an accurate and stable estimate of the asset covariance matrix ($\Sigma$). Traditional empirical covariance matrices, directly calculated from historical returns, suffer from significant noise, especially when dealing with a large number of assets or limited observations. This can lead to volatile optimization results and portfolios that are not truly diversified.
 
 To overcome this, we adopt a **single-factor model** based on Principal Component Analysis (PCA). The core idea is that asset returns are driven by a small number of common (systematic) factors plus idiosyncratic (asset-specific) risk. The covariance matrix is then reconstructed using this factor structure:
 
@@ -82,22 +82,7 @@ Here:
 * $\lambda$ (`lambda_penalty`) is a tunable hyperparameter representing the penalty strength for violating the cardinality constraint.
 * $K$ (`K_target_assets`) is the target number of assets to be selected in the portfolio. The term $(\sum_{i=1}^N x_i - K)^2$ penalizes portfolios that do not have exactly $K$ assets.
 
-To convert this expression into the standard QUBO form ($\mathbf{x}^T Q \mathbf{x}$), we expand the terms:
-
-1.  **Risk Term:** $\mathbf{x}^T \Sigma \mathbf{x} = \sum_{i,j} \Sigma_{ij} x_i x_j$
-2.  **Return Term:** $-q \cdot \boldsymbol{\mu}^T \mathbf{x} = -q \sum_i \mu_i x_i$
-3.  **Cardinality Penalty Term:** $\lambda (\sum_{i=1}^N x_i - K)^2 = \lambda \left( (\sum_i x_i)^2 - 2K \sum_i x_i + K^2 \right)$
-    * Expanding $(\sum_i x_i)^2 = \sum_i x_i^2 + \sum_{i \ne j} x_i x_j$. Since $x_i$ are binary, $x_i^2 = x_i$.
-    * So, $(\sum_i x_i)^2 = \sum_i x_i + \sum_{i \ne j} x_i x_j$.
-    * The penalty term becomes: $\lambda \left( \sum_i x_i + \sum_{i \ne j} x_i x_j - 2K \sum_i x_i + K^2 \right)$
-    * Rearranging: $\lambda \left( (1-2K) \sum_i x_i + \sum_{i \ne j} x_i x_j + K^2 \right)$
-    * The constant $K^2$ term does not affect the optimization of $x$ and can be ignored for finding the optimal $\mathbf{x}$ vector, but it shifts the absolute value of the cost function.
-
-Combining all terms, we construct the $Q$ matrix where diagonal elements $Q_{ii}$ correspond to coefficients of $x_i$ terms, and off-diagonal elements $Q_{ij}$ (for $i \ne j$) correspond to coefficients of $x_i x_j$ terms. In a symmetric $Q$ matrix, the coefficient of $x_i x_j$ is split as $Q_{ij} = Q_{ji} = \text{coeff}/2$.
-
-Specifically, for our QUBO matrix $Q$:
-* $Q_{ii} = \Sigma_{ii} - q \mu_i + \lambda (1 - 2K)$
-* $Q_{ij} = \Sigma_{ij} + \lambda \quad \text{for } i \ne j$ (assuming symmetric $\Sigma$, the $\lambda$ coefficient is effectively $2\lambda$ for $x_i x_j$ interactions if we sum $Q_{ij}x_ix_j + Q_{ji}x_jx_i$).
+To convert this expression into the standard QUBO form ($\mathbf{x}^T Q \mathbf{x}$), we expand the terms and derive the $Q$ matrix where diagonal elements $Q_{ii}$ correspond to coefficients of $x_i$ terms, and off-diagonal elements $Q_{ij}$ (for $i \ne j$) correspond to coefficients of $x_i x_j$ terms.
 
 Once the QUBO matrix $Q$ is formed, it is transformed into a **Cost Hamiltonian ($H_C$)** for QAOA. This involves mapping each binary variable $x_i$ to a Pauli-Z operator on a corresponding qubit using the standard mapping: $x_i \rightarrow (I - Z_i)/2$. This conversion translates the classical optimization problem into an eigenvalue problem on a quantum system.
 
@@ -129,15 +114,15 @@ The performance of QAOA is highly sensitive to its hyperparameters, which are no
 
 We implement a **grid search** strategy, exploring predefined ranges for the following critical hyperparameters:
 
-* **`q_risk_aversion_values`**: Controls the balance between risk minimization and return maximization in the financial objective. This parameter directly influences the diagonal elements of the QUBO matrix $Q$. Experimenting with different values helps find the optimal risk-return trade-off for the desired portfolio.
-* **`lambda_penalty_values`**: Determines the strength of the penalty for violating the cardinality constraint (selecting exactly `K_target_assets`). A very low $\lambda$ might result in portfolios with too many or too few assets, while a very high $\lambda$ might make the optimization landscape too steep, hindering convergence. This parameter significantly impacts both diagonal and off-diagonal elements of $Q$.
-* **`p_layers_values`**: The number of alternating QAOA layers. A higher `p` typically allows the QAOA circuit to explore the solution space more thoroughly and approximate the true ground state better, potentially leading to more accurate solutions. However, it also increases the number of variational parameters ($2p$ total) and the depth of the quantum circuit, making optimization harder and simulation more costly.
-* **`stepsize_values`**: The learning rate of the classical Adam optimizer. This controls how much the variational parameters are adjusted in each optimization step. An appropriate step size is crucial for efficient convergence; too large, and the optimizer might overshoot the minimum; too small, and convergence will be slow.
+* **`q_risk_aversion_values`**: Controls the balance between risk minimization and return maximization in the financial objective.
+* **`lambda_penalty_values`**: Determines the strength of the penalty for violating the cardinality constraint.
+* **`p_layers_values`**: The number of QAOA layers, influencing the circuit's expressivity and optimization complexity.
+* **`stepsize_values`**: The learning rate of the classical Adam optimizer.
 
 For each unique combination of these hyperparameters:
 1.  The corresponding `Q_matrix` and `H_cost` are constructed.
-2.  Multiple independent QAOA optimization runs (`num_qaoa_runs_per_hp_set`) are performed. This is a robust practice because QAOA optimization, especially with random initial parameters, can sometimes converge to local minima. By running multiple times, we increase the chance of finding a good solution for that hyperparameter set.
-3.  The best-performing set of variational angles (gamma and beta) from these runs is identified based on the lowest final cost.
+2.  Multiple independent QAOA optimization runs (`num_qaoa_runs_per_hp_set`) are performed to mitigate the chance of converging to local minima.
+3.  The best-performing set of variational angles from these runs is identified based on the lowest final cost.
 4.  The `qaoa_sampling_circuit` is then executed with these optimal angles to obtain a distribution of bitstrings.
 5.  Each sampled bitstring that satisfies the `K_target_assets` cardinality constraint is evaluated for its financial performance (return, risk, Sharpe ratio).
 6.  The bitstring yielding the highest Sharpe ratio for that hyperparameter set is recorded as the best result.
@@ -148,18 +133,15 @@ Finally, all tuning results are collected into a pandas DataFrame, allowing for 
 
 To set up and run this project, follow these steps:
 
-1.  **Ensure Python is Installed:** This project requires Python 3.8 or higher. If you don't have it, download it from [python.org](https://www.python.org/downloads/).
+1.  **Ensure Python is Installed:** This project requires Python 3.8 or higher. Download it from [python.org](https://www.python.org/downloads/).
 
 2.  **Clone the Repository:**
-    If this code resides in a Git repository, first clone it to your local machine:
     ```bash
-    git clone [https://github.com/your-username/quantum-portfolio-optimization.git](https://github.com/your-username/quantum-portfolio-optimization.git)
+    git clone [https://github.com/QuantumQuants/quantum-portfolio-optimization.git](https://github.com/QuantumQuants/quantum-portfolio-optimization.git)
     cd quantum-portfolio-optimization
     ```
-    (If you received the code as a single `.py` file, simply navigate to the directory where you saved it.)
 
 3.  **Create a Virtual Environment (Recommended):**
-    Using a virtual environment is best practice to manage project dependencies and avoid conflicts with other Python projects.
     ```bash
     python -m venv venv
     ```
@@ -176,17 +158,9 @@ To set up and run this project, follow these steps:
     You'll see `(venv)` in your terminal prompt, indicating the virtual environment is active.
 
 5.  **Install Project Dependencies:**
-    Install all necessary libraries using `pip`:
     ```bash
     pip install yfinance pandas numpy matplotlib scikit-learn pennylane pennylane-lightning
     ```
-    * `yfinance`: For fetching financial data.
-    * `pandas`: For data manipulation and analysis.
-    * `numpy`: For numerical operations.
-    * `matplotlib`: For plotting and visualization.
-    * `scikit-learn`: For PCA (Principal Component Analysis).
-    * `pennylane`: The core quantum machine learning library.
-    * `pennylane-lightning`: Provides the high-performance `lightning.qubit` simulator.
 
 ## Usage Instructions
 
@@ -195,140 +169,57 @@ Once the installation is complete and your virtual environment is activated, you
 1.  **Execute the Script:**
     Simply run the main Python script from your terminal:
     ```bash
-    python main_portfolio_optimizer.py # Replace with your script's actual name
+    python main_portfolio_optimizer.py # Assuming your script is named main_portfolio_optimizer.py
     ```
 
 2.  **Monitor Progress:**
-    The script will print real-time updates to your console, detailing each step:
-    * Data fetching and preparation progress.
-    * Factor analysis details (e.g., explained variance).
-    * Classical optimization results.
-    * The start of each QAOA hyperparameter tuning run, showing the `q`, `lambda`, `p`, and `step` values.
-    * Final tuning results, best portfolio details, and performance comparisons.
+    The script will print real-time updates to your console, detailing each step of data processing, classical optimization, and the start of each QAOA hyperparameter tuning run.
 
 3.  **View Plots:**
     Two plots will be generated and displayed automatically:
     * A bar chart showing the optimal portfolio asset allocation (weights) as determined by QAOA.
-    * A bar chart showing the frequency distribution of sampled bitstrings for the best QAOA result, illustrating the quantum state's preferences. Close the plots to allow the script to continue execution if it pauses.
+    * A bar chart showing the frequency distribution of sampled bitstrings for the best QAOA result.
+    Close the plots to allow the script to continue execution if it pauses.
 
 ## Configuration and Customization
 
-The project is designed to be easily customizable. You can modify key parameters directly within the Python script to adapt it to your specific research or analysis needs:
+You can modify key parameters directly within the Python script to adapt it to your specific research or analysis needs:
 
-* **Asset Universe:**
-    ```python
-    vanguard_tickers = [
-        "VOO",  # Vanguard S&P 500 ETF
-        "VTI",  # Vanguard Total Stock Market ETF
-        "BND",  # Vanguard Total Bond Market ETF
-        "VXUS", # Vanguard Total International Stock ETF
-        "VGT",  # Vanguard Information Technology ETF
-    ]
-    ```
-    Modify this list to include any other stock or ETF tickers you wish to analyze. Ensure `yfinance` supports these tickers.
-
-* **Historical Data Range:**
-    ```python
-    start_date = "2018-01-01"
-    end_date = "2023-12-31"
-    ```
-    Adjust these dates to analyze different market periods. Be mindful that very long periods might introduce stationarity issues, while very short periods might lack sufficient data for robust covariance estimation.
-
-* **Factor Model Parameters:**
-    ```python
-    num_factors = 2 # For 5 assets, 2-3 factors is a reasonable starting point.
-    ```
-    This defines the number of principal components to extract. Experiment with this value. A good rule of thumb is to select enough factors to explain 80-90% of the variance in returns, but not so many that you reintroduce too much noise. You can inspect `pca.explained_variance_ratio_` to guide this choice.
-
-* **Portfolio Cardinality Constraint:**
-    ```python
-    K_target_assets = 2 # Example: select 2 out of 5 assets
-    ```
-    This sets the desired number of assets in the final portfolio. The QAOA objective function will penalize solutions that deviate from this number.
-
-* **QAOA Hyperparameter Search Space:**
-    ```python
-    q_risk_aversion_values = [0.1, 0.5, 1.0]
-    lambda_penalty_values = [5.0, 10.0]
-    p_layers_values = [1, 2] # Number of QAOA layers
-    stepsize_values = [0.01, 0.05] # Optimizer learning rate
-    ```
-    Expand or refine these lists to explore a wider or more granular range of hyperparameters. Be aware that increasing the number of values will significantly increase the total computation time.
-
-* **QAOA Optimization Run Parameters:**
-    ```python
-    num_qaoa_runs_per_hp_set = 3 # Number of independent QAOA runs for each HP combination
-    optimization_steps_per_run = 50 # Number of optimization steps per QAOA run
-    ```
-    Increasing `num_qaoa_runs_per_hp_set` can improve the robustness of finding the best parameters for a given HP set, reducing the chance of getting stuck in local minima. Increasing `optimization_steps_per_run` allows the classical optimizer more iterations to converge, potentially leading to lower costs. Both will increase runtime.
-
-* **Quantum Device Shots:**
-    ```python
-    dev = qml.device("lightning.qubit", wires=num_qubits, shots=10000)
-    ```
-    The `shots` parameter determines how many times the quantum circuit is measured to generate the bitstring distribution (`qml.sample`). A higher number of shots leads to a more accurate statistical representation of the quantum state's probabilities but increases simulation time for sampling. For expectation value calculations (during optimization), `lightning.qubit` often uses analytical methods by default even with `shots` specified, providing exact gradients.
+* **Asset Universe:** `vanguard_tickers` list.
+* **Historical Data Range:** `start_date`, `end_date`.
+* **Factor Model Parameters:** `num_factors`.
+* **Portfolio Cardinality Constraint:** `K_target_assets`.
+* **QAOA Hyperparameter Search Space:** `q_risk_aversion_values`, `lambda_penalty_values`, `p_layers_values`, `stepsize_values`.
+* **QAOA Optimization Run Parameters:** `num_qaoa_runs_per_hp_set`, `optimization_steps_per_run`.
+* **Quantum Device Shots:** `dev = qml.device("lightning.qubit", wires=num_qubits, shots=10000)`.
 
 ## Understanding the Results and Analysis
 
 The project provides a multi-faceted analysis of the portfolio optimization:
 
-1.  **Classical Minimum Variance Portfolio:**
-    This serves as a traditional benchmark. It's a portfolio that minimizes risk without considering expected returns (or assuming a risk-free rate of zero for Sharpe ratio calculation). The weights are derived using classical convex optimization techniques.
-
-2.  **Hyperparameter Tuning Results (`tuning_df`):**
-    This DataFrame is the core output of the tuning process. Each row represents a unique combination of `q`, `lambda`, `p_layers`, and `stepsize`. Key columns include:
-    * `final_cost`: The lowest QAOA cost achieved during optimization for that specific hyperparameter set.
-    * `best_bitstring`: The asset selection (e.g., '01101') that yielded the highest Sharpe ratio among all valid bitstrings sampled for that set.
-    * `best_sharpe`: The annualized Sharpe ratio for the `best_bitstring`. This is the primary metric for comparison.
-    * `best_return`, `best_risk`: The annualized return and standard deviation for the `best_bitstring`.
-
-3.  **Overall Best QAOA Portfolio:**
-    After the full tuning process, the row from `tuning_df` with the highest `best_sharpe` is identified as the "Overall Best QAOA Portfolio." This represents the most financially attractive portfolio found by the QAOA given the search space.
-
-4.  **Optimal Portfolio Weights (QAOA Result - Table & Chart):**
-    The `best_weights` for the overall best QAOA portfolio are displayed in a table and visualized as a bar chart. This shows which assets were selected (non-zero weights) and how the capital is equally distributed among the selected assets (due to the binary selection model where weights are $1/K$).
-
-5.  **Bitstring Distribution Plot:**
-    This plot illustrates the probabilities of various asset combinations being measured from the final quantum state of the QAOA circuit (using the optimal parameters from the best QAOA portfolio). The height of each bar indicates the frequency of a particular bitstring being sampled. Ideally, the bitstring corresponding to the highest Sharpe ratio (or lowest cost) should appear with the highest frequency, demonstrating that the QAOA successfully learned to amplify the probability of the optimal solution.
-
-6.  **Portfolio Performance Comparison (Classical vs. QAOA):**
-    A concise table summarizes the annualized return, risk, and Sharpe ratio for both the classical minimum variance portfolio and the best QAOA-derived portfolio. This allows for a direct comparison of their financial efficacy, highlighting the potential advantages or trade-offs of the quantum approach for this specific problem instance.
+1.  **Classical Minimum Variance Portfolio:** A traditional benchmark.
+2.  **Hyperparameter Tuning Results (`tuning_df`):** A DataFrame summarizing the performance of each hyperparameter combination.
+3.  **Overall Best QAOA Portfolio:** Details of the optimal hyperparameters found, the selected asset bitstring, and calculated portfolio metrics for the best-performing QAOA configuration.
+4.  **Optimal Portfolio Weights (QAOA Result - Table & Chart):** Visual representation of capital allocation.
+5.  **Bitstring Distribution Plot:** Illustrates the probabilities of various asset combinations being measured from the final quantum state.
+6.  **Portfolio Performance Comparison (Classical vs. QAOA):** A concise table comparing annualized return, risk, and Sharpe ratio.
 
 ## Future Enhancements and Research Directions
 
 This project serves as a foundational demonstration. Several avenues exist for significant enhancement and further research:
 
-* **Advanced Hyperparameter Optimization:** Replace the exhaustive grid search with more efficient methods like Bayesian Optimization, Genetic Algorithms, or Reinforcement Learning-based approaches. These methods can explore the parameter space more intelligently, potentially finding better optima faster.
-* **Dynamic QAOA Ansätze:** Implement adaptive QAOA strategies where the number of layers (`p`) or the structure of the mixer Hamiltonian can change dynamically during the optimization process based on intermediate results.
-* **Variational Quantum Eigensolver (VQE):** While QAOA is a specialized algorithm, VQE offers a more general framework for finding ground states of Hamiltonians. Exploring different VQE ansätze (e.g., Hardware-Efficient Ansätze, UCC, UCCSD) could yield improved performance or robustness.
-* **Quantum Annealing:** For problems directly mappable to QUBOs, quantum annealers (e.g., D-Wave systems) are a direct alternative to gate-model QAOA. Integrating with D-Wave's Ocean SDK could provide a different quantum approach.
-* **Continuous Portfolio Weights:** The current model focuses on binary asset selection. Future work could explore methods for handling continuous portfolio weights. This might involve:
-    * **Amplitude Encoding:** Encoding weights into the amplitudes of quantum states, though this is complex for non-normalized weights.
-    * **Basis Encoding with Multiple Qubits:** Using multiple qubits per asset to represent a range of possible weights, increasing the qubit count rapidly.
-    * **Hybrid Integer/Continuous Optimization:** Developing hybrid algorithms that combine quantum optimization for selection with classical optimization for weight allocation.
-* **Real Quantum Hardware Execution:** Transition from simulators to actual quantum processing units (QPUs). This would involve addressing real-world challenges like noise, limited qubit connectivity, and gate fidelities, potentially requiring error mitigation techniques.
-* **Robustness and Out-of-Sample Testing:** Evaluate the long-term performance and stability of the quantum-optimized portfolios on out-of-sample data, simulating real market conditions. This is crucial for practical application.
-* **Advanced Financial Constraints:** Incorporate more sophisticated and realistic financial constraints, such as:
-    * **Transaction Costs:** Penalizing rebalancing or frequent trades.
-    * **Minimum Investment Amounts:** Ensuring that selected assets meet certain investment thresholds.
-    * **Liquidity Constraints:** Accounting for the ease of buying and selling large positions.
-    * **Sector/Industry Diversification:** Adding constraints to ensure diversification across different market sectors.
-* **Integration with Economic Models:** Explore more complex factor models (e.g., macroeconomic factors) or integrate with other economic theories to refine expected return forecasts and risk modeling.
+* **Advanced Hyperparameter Optimization:** Implement more efficient methods like Bayesian Optimization or Genetic Algorithms.
+* **Dynamic QAOA Ansätze:** Explore adaptive QAOA strategies where circuit depth or structure changes dynamically.
+* **Alternative Quantum Algorithms:** Investigate other quantum algorithms like VQE or specialized quantum annealing approaches.
+* **Continuous Portfolio Weights:** Extend the model to handle continuous portfolio weights using advanced encoding schemes or hybrid algorithms.
+* **Real Quantum Hardware Execution:** Transition from simulators to actual quantum processing units (QPUs), addressing real-world challenges like noise and hardware constraints.
+* **Robustness and Out-of-Sample Testing:** Evaluate long-term performance on unseen market data.
+* **Advanced Financial Constraints:** Incorporate more sophisticated constraints such as transaction costs, minimum investment amounts, or sector diversification.
+* **Integration with Economic Models:** Explore more complex factor models or integrate with other economic theories.
 
 ## Contributing to the Project
 
-We welcome contributions to enhance and expand this project! If you're interested in contributing, please consider the following:
-
-* **Bug Reports:** If you find any issues or unexpected behavior, please open an issue on the GitHub repository. Provide clear steps to reproduce the bug.
-* **Feature Requests:** Have an idea for a new feature or improvement? Open an issue to discuss it.
-* **Code Contributions:**
-    1.  Fork the repository.
-    2.  Create a new branch for your feature or bug fix (`git checkout -b feature/your-feature-name` or `bugfix/issue-description`).
-    3.  Make your changes, ensuring code quality and adding comments where necessary.
-    4.  Write or update relevant tests (if applicable) to ensure your changes work as expected and don't introduce regressions.
-    5.  Commit your changes (`git commit -m "Add new feature"`).
-    6.  Push your branch to your forked repository (`git push origin feature/your-feature-name`).
-    7.  Open a Pull Request (PR) from your forked repository to the main branch of this project. Describe your changes clearly in the PR description.
+We welcome contributions to enhance and expand this project! Please feel free to open issues or submit pull requests with improvements, bug fixes, or new features.
 
 ## License Information
 
