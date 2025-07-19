@@ -12,9 +12,9 @@ QuantumQuantfinanceIIST
 
 In the dynamic and often volatile realm of financial markets, the core challenge of **portfolio optimization** lies in constructing an investment portfolio that maximizes returns for a given level of risk, or minimizes risk for a target return. While seminal works like Markowitz's Modern Portfolio Theory laid the groundwork, practical application faces significant hurdles. A primary difficulty stems from the **estimation of the covariance matrix** of asset returns, which is notoriously noisy, unstable, and prone to large errors due to limited historical data, market non-stationarity, and the "curse of dimensionality" when dealing with a large asset universe. These estimation errors can lead to portfolios that are theoretically optimal but perform poorly in real-world scenarios, exhibiting unexpected volatility or failing to capture true diversification benefits.
 
-Our project addresses these fundamental challenges by pioneering a **robust hybrid quantum-classical framework** for portfolio selection. This framework is particularly focused on satisfying practical financial constraints, specifically **cardinality constraints**, which mandate selecting a precise number of assets ($K$) for the portfolio. The methodology is structured around three interconnected pillars:
+Our project addresses these fundamental challenges by pioneering a **robust hybrid quantum-classical framework** for portfolio selection, specifically focused on satisfying practical financial constraints, such as **cardinality constraints**, which mandate selecting a precise number of assets ($K$) for the portfolio. The methodology is structured around three interconnected pillars:
 
-1.  **Classical Factor Model for Robust Covariance Estimation:** To overcome the limitations of empirical covariance, we first employ a **Principal Component Analysis (PCA)-based factor model**. This approach assumes that asset returns are primarily driven by a smaller set of common (systematic) macroeconomic or statistical factors, in addition to asset-specific (idiosyncratic) risk. By decomposing and reconstructing the covariance matrix using PCA, we effectively denoise the input, leading to a more stable and accurate risk assessment. This factor-based covariance matrix provides a more reliable foundation for the subsequent optimization problem.
+1.  **Classical Factor Model for Robust Covariance Estimation:** To overcome the limitations of empirical covariance, we first employ a **Principal Component Analysis (PCA)-based factor model**. This model posits that asset returns are primarily driven by a smaller set of common (systematic) macroeconomic or statistical factors, in addition to asset-specific (idiosyncratic) risk. By decomposing and reconstructing the covariance matrix using PCA, we effectively denoise the input, leading to a more stable and accurate risk assessment. This factor-based covariance matrix provides a more reliable foundation for the subsequent optimization problem.
 
 2.  **Portfolio Optimization as a Quadratic Unconstrained Binary Optimization (QUBO) Problem:** The multi-objective portfolio selection problem (balancing risk, return, and enforcing cardinality) is meticulously transformed into a QUBO problem. This transformation is critical as QUBOs represent a canonical form for many combinatorial optimization problems, making them directly amenable to quantum algorithms. Each asset's inclusion in the portfolio is represented by a binary variable, $x_i \in \{0, 1\}$. The objective function is constructed to penalize high risk, reward high expected returns (adjusted by a risk-aversion parameter), and strongly penalize deviations from the target asset count. This formulation allows the entire problem to be encoded into a single quadratic cost function.
 
@@ -77,8 +77,8 @@ This project offers a robust set of features meticulously designed for quantum-e
     * **Benefit:** Addresses the critical challenge of QAOA's sensitivity to hyperparameters. This systematic approach enhances the likelihood of discovering near-optimal QAOA configurations, leading to more robust and higher-quality portfolio solutions compared to arbitrary parameter choices.
 
 * **Comprehensive Performance Analysis & Visualization:**
-    * **Detail:** Generates detailed output including the derived QUBO matrix, the constructed Hamiltonians, the full hyperparameter tuning results table, and the optimal QAOA portfolio's specific asset selections and equal weights (given the binary nature). Financial performance metrics (annualized return, risk, Sharpe ratio) are calculated. Visualizations include a bar chart of optimal portfolio asset allocation and a bitstring frequency distribution plot from the quantum sampling, providing insights into the quantum state's preferences.
-    * **Benefit:** Offers a clear, quantitative, and intuitive understanding of the quantum solution's characteristics and its comparative advantage over classical benchmarks.
+    * **Detail:** Generates detailed output including the derived QUBO matrix, the constructed Hamiltonians, the full hyperparameter tuning results table, and the optimal QAOA portfolio's specific asset selections and equal weights (given the binary nature). Financial performance metrics (annualized return, risk, Sharpe ratio) are calculated. Visualizations include a bar chart of optimal portfolio asset allocation and a bitstring frequency distribution plot from the quantum sampling, providing insights into the quantum state's preferences. **Furthermore, it now includes the explicit printout of the QUBO matrix and Cost Hamiltonian for the *overall best* QAOA portfolio, along with a plot of its optimization cost history and a detailed evaluation of its top sampled bitstrings.**
+    * **Benefit:** Offers a clear, quantitative, and intuitive understanding of the quantum solution's characteristics and its comparative advantage over classical benchmarks, with enhanced diagnostic plots for the best-performing solution.
 
 * **Hybrid Quantum-Classical Architecture:**
     * **Detail:** The project exemplifies a practical hybrid computing paradigm. Classical processors are utilized for data fetching, factor model estimation, QUBO formulation, and the iterative optimization loop of QAOA's variational parameters. The quantum simulator (or potentially hardware) is dedicated to executing the quantum circuit for cost evaluation and sampling.
@@ -176,8 +176,9 @@ Our implementation leverages **PennyLane**, a differentiable quantum computing f
 5.  **Classical Optimization Loop:**
     An `AdamOptimizer` is chosen for its robustness and adaptive learning rate capabilities. The classical optimizer iteratively updates the QAOA parameters (`gamma` and `beta` angles) to minimize the cost returned by the `qaoa_circuit`. This feedback loop drives the quantum state towards the ground state of the Cost Hamiltonian, which corresponds to the optimal classical solution.
 
-6.  **QAOA Sampling Circuit (`qaoa_sampling_circuit`):**
-    After the optimization finds the `best_params`, this separate QNode is invoked. Instead of returning an expectation value, it performs `qml.sample(wires=range(num_qubits))`. This measures the quantum state multiple times (equal to `dev.shots`), yielding a set of bitstrings. The distribution of these bitstrings directly reflects the probability amplitudes of the final quantum state, with higher probabilities indicating better solutions.
+6.  **QAOA Sampling Circuits (`qaoa_sampling_circuit_internal` and `qaoa_sampling_circuit_final`):**
+    * `qaoa_sampling_circuit_internal`: Used *within* the hyperparameter tuning loop. It uses the `dev` initialized with `shots=1000` for faster evaluation of many hyperparameter combinations.
+    * `qaoa_sampling_circuit_final`: A separate QNode defined *after* tuning, using `dev_final_sampling` with `shots=10000`. This is used for the final, high-quality bitstring distribution plot and detailed evaluation of the overall best QAOA portfolio. It ensures that the final presented results are based on more robust statistics.
 
 ### Hyperparameter Tuning: Optimizing the Optimizer
 
@@ -191,10 +192,10 @@ QAOA's performance is profoundly influenced by its hyperparameters, which are ex
 The tuning process iterates through every combination of these hyperparameters. For each combination:
 1.  **QUBO Construction:** The `Q_matrix` and `H_cost` are re-built based on the current `q_risk_aversion` and `lambda_penalty`.
 2.  **Multiple QAOA Runs:** `num_qaoa_runs_per_hp_set` independent QAOA optimizations are performed. This is a common practice to mitigate the problem of local minima in variational algorithms. Each run starts with a new set of random initial parameters.
-3.  **Best Parameter Selection:** Within each set of multiple runs for a given hyperparameter combination, the `best_params_for_hp_set` (gamma and beta angles) corresponding to the lowest achieved `final_cost` are selected.
-4.  **Solution Sampling and Evaluation:** The `qaoa_sampling_circuit` is invoked using these `best_params_for_hp_set`. The resulting bitstrings are collected, counted, and then individually evaluated for their financial metrics (return, risk, Sharpe Ratio). Crucially, only bitstrings that satisfy the `K_target_assets` cardinality constraint are considered valid for portfolio evaluation.
+3.  **Best Parameter Selection:** Within each set of multiple runs for a given hyperparameter combination, the `best_params_for_hp_set` (gamma and beta angles) corresponding to the lowest achieved `final_cost` are selected. The `cost_history` of this best run is also stored.
+4.  **Solution Sampling and Evaluation:** The `qaoa_sampling_circuit_internal` is invoked using these `best_params_for_hp_set`. The resulting bitstrings are collected, counted, and then individually evaluated for their financial metrics (return, risk, Sharpe Ratio). Crucially, only bitstrings that satisfy the `K_target_assets` cardinality constraint are considered valid for portfolio evaluation.
 5.  **Best Portfolio for HP Set:** The bitstring that yields the highest Sharpe Ratio among the valid sampled portfolios for that specific hyperparameter combination is identified.
-6.  **Result Aggregation:** All results for each hyperparameter combination (including the best-found Sharpe Ratio, bitstring, and calculated portfolio metrics) are stored in a pandas DataFrame (`tuning_df`).
+6.  **Result Aggregation:** All results for each hyperparameter combination (including the best-found Sharpe Ratio, bitstring, calculated portfolio metrics, **the `best_params` themselves**, and the `cost_history` of the best run) are stored in a pandas DataFrame (`tuning_df`).
 
 Finally, the `tuning_df` is analyzed to identify the overall best QAOA portfolio across the entire hyperparameter search space, which is the entry with the highest Sharpe Ratio.
 
@@ -256,12 +257,13 @@ Once the project dependencies are installed and the virtual environment is activ
     * **Factor Analysis:** Details of factor loadings, explained variance, and the reconstructed covariance matrix.
     * **Classical Benchmark:** Weights and performance metrics of the classical minimum variance portfolio.
     * **QAOA Hyperparameter Tuning:** A log indicating the start of each hyperparameter combination being evaluated, including `q`, `lambda`, `p`, and `stepsize`. Due to the nature of optimization and sampling, these logs will update as each combination completes.
-    * **Final Results:** Summary of the best overall QAOA portfolio, including optimal hyperparameters, selected assets, and comparative performance metrics.
+    * **Final Results:** Summary of the overall best QAOA portfolio, including optimal hyperparameters, selected assets, and comparative performance metrics.
 
 3.  **Interact with Plots:**
-    During execution, the script will generate and display two `matplotlib` plots:
+    During execution, the script will generate and display multiple `matplotlib` plots:
+    * **QAOA Optimization Cost History:** Shows the convergence of the cost function for the best-performing QAOA run.
     * **Optimal Portfolio Asset Allocation:** A bar chart visualizing the proportional weights of assets selected by the best QAOA portfolio.
-    * **Distribution of Sampled Bitstrings:** A bar chart illustrating the frequency of the top (most probable) asset selection bitstrings obtained from the QAOA sampling circuit. This provides insight into the quantum state's preferred solutions.
+    * **Distribution of Sampled Bitstrings:** A bar chart illustrating the frequency of the top (most probable) asset selection bitstrings obtained from the QAOA sampling circuit.
     You may need to close each plot window for the script to continue to the next stage or finalize its execution.
 
 ## Configuration and Customization
@@ -322,10 +324,13 @@ The project is designed with flexibility in mind, allowing users to easily modif
 * **Quantum Device Shots:**
     ```python
     dev = qml.device("lightning.qubit", wires=num_qubits, shots=1000)
+    # ...
+    final_sampling_shots_value = 10000
+    dev_final_sampling = qml.device("lightning.qubit", wires=num_qubits, shots=final_sampling_shots_value)
     ```
-    The `shots` parameter dictates how many times the quantum circuit is measured when `qml.sample` is called (used for the bitstring distribution plot and final portfolio evaluation).
-    * A higher `shots` value (e.g., 10,000 or more) yields a more statistically accurate representation of the quantum state's probability distribution.
-    * A lower `shots` value (like the current 1,000) reduces simulation time for sampling but might introduce more statistical noise into the observed bitstring frequencies. For optimization (`qml.expval`), `lightning.qubit` often uses analytical computation regardless of `shots` for efficiency.
+    The `shots` parameter dictates how many times the quantum circuit is measured when `qml.sample` is called.
+    * `dev` (used during tuning) is set to `1000` shots for faster internal evaluation.
+    * `dev_final_sampling` (used for final plots) is set to `10000` shots to ensure a more statistically accurate representation of the quantum state's probability distribution for the final presented results. A higher `shots` value increases simulation time for sampling.
 
 ## Understanding the Results and Analysis
 
@@ -340,22 +345,31 @@ The project provides a comprehensive output designed to facilitate a deep unders
     * `final_cost`: The minimum cost function value achieved by the QAOA optimization for this specific hyperparameter set. A lower cost indicates better optimization performance in terms of the QUBO objective.
     * `best_bitstring`: The binary string (e.g., '01101') that represents the asset selection found among the sampled solutions for this hyperparameter set, which yielded the highest Sharpe Ratio *and* satisfied the `K_target_assets` cardinality constraint.
     * `best_sharpe`, `best_return`, `best_risk`: The annualized Sharpe Ratio, annualized return, and annualized standard deviation (risk) calculated for the portfolio corresponding to the `best_bitstring`. These are the ultimate financial performance indicators.
-    * `best_weights`: The allocated weights for each asset in this portfolio. This table allows for granular comparison across different tuning configurations.
+    * `best_weights`: The allocated weights for each asset in this portfolio.
+    * `cost_history`: The list of cost values over optimization steps for the best QAOA run within this hyperparameter set.
+    * `best_params`: The optimized gamma and beta angles for the best QAOA run within this hyperparameter set.
+    This table allows for granular comparison across different tuning configurations.
 
 3.  **Overall Best QAOA Portfolio:**
     Following the completion of the full hyperparameter tuning, the `tuning_df` is filtered to exclude invalid portfolios (those not meeting constraints) and then sorted by Sharpe Ratio. The entry with the **highest `best_sharpe`** is identified as the "Overall Best QAOA Portfolio." This represents the most financially attractive portfolio discovered within the entire hyperparameter search space. Its specific hyperparameters, selected assets, and detailed performance metrics are then printed.
 
-4.  **Optimal Portfolio Weights (QAOA Result - Table & Chart):**
+4.  **QUBO Matrix (Q) and Cost Hamiltonian (H_cost) for Overall Best QAOA Portfolio:**
+    For the overall best QAOA portfolio, the corresponding QUBO matrix and its mapped Cost Hamiltonian are explicitly recalculated and printed. This provides a direct view of the specific optimization problem instance that QAOA successfully solved.
+
+5.  **QAOA Optimization Cost History for Overall Best QAOA Portfolio:**
+    A dedicated plot shows the convergence of the cost function over optimization steps for the QAOA run that yielded the overall best portfolio. This visualizes the optimization process and how the cost was minimized.
+
+6.  **Optimal Portfolio Weights (QAOA Result - Table & Chart):**
     * **Table:** A clear tabular display lists each asset and its corresponding optimal weight as determined by the best QAOA portfolio. Due to the binary selection nature and equal weighting among selected assets in this model, weights will typically be $1/K$ for selected assets and $0$ for unselected ones.
     * **Bar Chart:** A visual bar chart graphically represents these optimal weights. This provides an intuitive understanding of the asset allocation strategy recommended by the quantum approach, making it easy to see which assets are included and their proportional contribution.
 
-5.  **Bitstring Distribution Plot:**
-    This bar chart visualizes the empirical probability distribution of bitstrings sampled from the final quantum state of the QAOA circuit, specifically using the optimal parameters found for the "Overall Best QAOA Portfolio."
-    * Each bar represents a unique bitstring (an asset combination).
-    * The height of the bar indicates the frequency (or empirical probability) of that bitstring being measured over `dev.shots` repetitions.
-    * Ideally, the bitstring corresponding to the true optimal portfolio should have the highest frequency, demonstrating that the QAOA successfully amplified its probability amplitude during the quantum evolution. This plot provides insight into the "quantum solution space" and the algorithm's convergence characteristics.
+7.  **Detailed Evaluation of Top Bitstrings from Final Sampling:**
+    A table is presented showing the top most frequently sampled bitstrings from the `qaoa_sampling_circuit_final` (which uses `10000` shots). For each of these bitstrings, its corresponding assets, number of assets, return, risk, and Sharpe Ratio are calculated and displayed. This offers a deeper dive into the solutions that the quantum state favors, beyond just the single best one.
 
-6.  **Portfolio Performance Comparison (Classical vs. QAOA):**
+8.  **Bitstring Distribution Plot (Full Shots):**
+    This bar chart visualizes the empirical probability distribution of bitstrings sampled from the final quantum state of the QAOA circuit, specifically using the optimal parameters found for the "Overall Best QAOA Portfolio" and a high number of shots (`10000`). This plot provides a statistically robust insight into the "quantum solution space" and the algorithm's convergence characteristics, showing which asset combinations are most probable.
+
+9.  **Portfolio Performance Comparison (Classical vs. QAOA):**
     A concise comparison table provides a side-by-side view of the key financial performance metrics (Annualized Return, Annualized Risk, Sharpe Ratio) for both the `Classical Min Variance` portfolio and the `QAOA Portfolio`. This table is the culminating point of the analysis, offering a direct, quantitative comparison that highlights:
     * Whether the quantum approach achieved superior risk-adjusted returns (a higher Sharpe Ratio).
     * How it balanced return generation against risk minimization compared to a purely risk-focused classical strategy.
