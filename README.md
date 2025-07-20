@@ -18,7 +18,7 @@ Our project addresses these fundamental challenges by pioneering a **robust hybr
 
 2.  **Portfolio Optimization as a Quadratic Unconstrained Binary Optimization (QUBO) Problem:** The multi-objective portfolio selection problem (balancing risk, return, and enforcing cardinality) is meticulously transformed into a QUBO problem. This transformation is critical as QUBOs represent a canonical form for many combinatorial optimization problems, making them directly amenable to quantum algorithms. Each asset's inclusion in the portfolio is represented by a binary variable, $x_i \in \{0, 1\}$. The objective function is constructed to penalize high risk, reward high expected returns (adjusted by a risk-aversion parameter), and strongly penalize deviations from the target asset count. This formulation allows the entire problem to be encoded into a single quadratic cost function.
 
-3.  **Quantum Approximate Optimization Algorithm (QAOA) for QUBO Solution:** The heart of our quantum approach lies in the **Quantum Approximate Optimization Algorithm (QAOA)**. QAOA is a leading hybrid quantum-classical algorithm designed for solving combinatorial optimization problems on near-term intermediate-scale quantum (NISQ) devices. We utilize PennyLane, a quantum machine learning library, to construct and execute the QAOA circuit. This variational algorithm iteratively refines a set of quantum gate parameters (angles) by minimizing the expectation value of a problem-specific "Cost Hamiltonian" – a quantum mechanical operator representation of our financial QUBO. The quantum circuit prepares a state whose measurement probabilities are peaked around the optimal portfolio configurations. For practical simulation, we employ the high-performance `lightning.qubit` simulator.
+3.  **Quantum Approximate Optimization Algorithm (QAOA) for QUBO Solution:** The heart of our quantum approach lies in the **Quantum Approximate Optimization Algorithm (QAOA)**. QAOA is a leading hybrid quantum-classical algorithm designed for solving combinatorial optimization problems on near-term quantum computers (NISQ devices). We utilize PennyLane, a quantum machine learning library, to construct and execute the QAOA circuit. This variational algorithm iteratively refines a set of quantum gate parameters (angles) by minimizing the expectation value of a problem-specific "Cost Hamiltonian" – a quantum mechanical operator representation of our financial QUBO. The quantum circuit prepares a state whose measurement probabilities are peaked around the optimal portfolio configurations. For practical simulation, we employ the high-performance `lightning.qubit` simulator.
 
 Crucially, the performance of QAOA is highly sensitive to its **hyperparameters** (e.g., number of QAOA layers, optimization learning rates, and the financial parameters like risk aversion and cardinality penalty strength). To address this, our project implements a systematic **hyperparameter tuning framework**. This involves a grid-search approach that explores various combinations of these parameters. For each combination, multiple independent QAOA optimizations are executed to enhance robustness against local minima. The best-performing quantum parameters are then used to sample numerous portfolio configurations, which are subsequently evaluated using classical financial metrics (e.g., Sharpe Ratio). This rigorous tuning process ensures that the identified quantum-derived portfolio represents the best possible solution within the defined parameter space.
 
@@ -151,10 +151,10 @@ The Quantum Approximate Optimization Algorithm (QAOA) is a powerful variational 
 Our implementation leverages **PennyLane**, a differentiable quantum computing framework that integrates quantum hardware and simulators with popular classical machine learning libraries like NumPy and PyTorch.
 
 1.  **Quantum Device Initialization:**
-    We use `qml.device("lightning.qubit", wires=num_qubits, shots=1000)`.
+    We use `qml.device("lightning.qubit", wires=num_qubits, shots=10000)`.
     * `lightning.qubit`: This is PennyLane's high-performance C++ backend simulator, known for its speed in state-vector simulations.
     * `wires=num_qubits`: Each qubit represents an asset ($x_i$), so `num_qubits` is equal to `num_assets`.
-    * `shots=1000`: This parameter is crucial for `qml.sample` measurements. It instructs the simulator to perform 1000 repetitions of the quantum circuit and return the bitstring outcomes. While `lightning.qubit` can compute expectation values (`qml.expval`) analytically even with shots defined (for certain observables like Pauli products), the `shots` value is essential for obtaining statistically meaningful distributions from `qml.sample`. We've reduced this from 10,000 to 1,000 for faster demonstration/tuning, acknowledging the trade-off with statistical accuracy.
+    * `shots=10000`: This parameter is crucial for `qml.sample` measurements. It instructs the simulator to perform 10,000 repetitions of the quantum circuit and return the bitstring outcomes. While `lightning.qubit` can compute expectation values (`qml.expval`) analytically even with shots defined (for certain observables like Pauli products), the `shots` value is essential for obtaining statistically meaningful distributions from `qml.sample`.
 
 2.  **Cost Hamiltonian ($H_C$) Construction:**
     The `build_qaoa_cost_hamiltonian` function takes the classically derived `Q_matrix` and translates it into a sum of Pauli operators. The mapping $x_i \rightarrow (I - Z_i)/2$ is applied to each binary variable. This means:
@@ -177,8 +177,8 @@ Our implementation leverages **PennyLane**, a differentiable quantum computing f
     An `AdamOptimizer` is chosen for its robustness and adaptive learning rate capabilities. The classical optimizer iteratively updates the QAOA parameters (`gamma` and `beta` angles) to minimize the cost returned by the `qaoa_circuit`. This feedback loop drives the quantum state towards the ground state of the Cost Hamiltonian, which corresponds to the optimal classical solution.
 
 6.  **QAOA Sampling Circuits (`qaoa_sampling_circuit_internal` and `qaoa_sampling_circuit_final`):**
-    * `qaoa_sampling_circuit_internal`: Used *within* the hyperparameter tuning loop. It uses the `dev` initialized with `shots=1000` for faster evaluation of many hyperparameter combinations.
-    * `qaoa_sampling_circuit_final`: A separate QNode defined *after* tuning, using `dev_final_sampling` with `shots=10000`. This is used for the final, high-quality bitstring distribution plot and detailed evaluation of the overall best QAOA portfolio. It ensures that the final presented results are based on more robust statistics.
+    * `qaoa_sampling_circuit_internal`: Used *within* the hyperparameter tuning loop. It uses the `dev` initialized with `shots=10000` (consistent with the main tuning device) to ensure robust statistics during the evaluation of each hyperparameter set.
+    * `qaoa_sampling_circuit_final`: A separate QNode defined *after* tuning, also using `dev_final_sampling` with `shots=10000`. This is used for the final, high-quality bitstring distribution plot and detailed evaluation of the overall best QAOA portfolio. It ensures that the final presented results are based on robust statistics.
 
 ### Hyperparameter Tuning: Optimizing the Optimizer
 
@@ -228,18 +228,10 @@ To set up and run this project, ensure you have a Python 3.8+ environment. A vir
     Your terminal prompt should now show `(venv)` indicating the active environment.
 
 4.  **Install Project Dependencies:**
-    With the virtual environment activated, install all required Python packages:
+    With the virtual environment activated, install all required Python packages using the `requirements.txt` file:
     ```bash
-    pip install yfinance pandas numpy matplotlib scikit-learn pennylane pennylane-lightning
+    pip install -r requirements.txt
     ```
-    This command installs:
-    * `yfinance`: For fetching historical financial data efficiently.
-    * `pandas`: For robust data manipulation and analysis, especially with DataFrames.
-    * `numpy`: The fundamental package for numerical computing in Python, providing array operations.
-    * `matplotlib`: For creating static, animated, and interactive visualizations.
-    * `scikit-learn`: A comprehensive machine learning library, specifically used here for `sklearn.decomposition.PCA`.
-    * `pennylane`: The core open-source quantum machine learning library.
-    * `pennylane-lightning`: Provides the high-performance `lightning.qubit` simulator backend for PennyLane.
 
 ## Usage Instructions
 
@@ -297,10 +289,10 @@ The project is designed with flexibility in mind, allowing users to easily modif
 
 * **QAOA Hyperparameter Search Space:**
     ```python
-    q_risk_aversion_values = [0.5]
-    lambda_penalty_values = [10.0]
-    p_layers_values = [1]
-    stepsize_values = [0.05]
+    q_risk_aversion_values = [0.1, 0.5, 1.0] # Original full range
+    lambda_penalty_values = [5.0, 10.0] # Original full range
+    p_layers_values = [1, 2] # Original full range
+    stepsize_values = [0.01, 0.05] # Original full range
     ```
     These lists define the discrete values that the hyperparameter tuning process will iterate through.
     * **`q_risk_aversion_values`**: Controls the balance between maximizing return and minimizing risk in the QUBO objective. A higher `q` will emphasize returns more.
@@ -308,29 +300,23 @@ The project is designed with flexibility in mind, allowing users to easily modif
     * **`p_layers_values`**: The number of QAOA layers. More layers ($p$) generally enhance the circuit's ability to approximate the optimal solution but exponentially increase the number of variational parameters ($2p$) and computational cost.
     * **`stepsize_values`**: The learning rate for the classical `AdamOptimizer`. This parameter controls the magnitude of updates to the QAOA angles during gradient descent.
 
-    **Note for Runtime:** The current default values for these lists are intentionally set to single values and reduced for rapid execution and demonstration purposes. For a more thorough and robust hyperparameter search in a research or production setting, it is highly recommended to **expand these lists** to include a wider range of values.
-
 * **QAOA Optimization Run Parameters:**
     ```python
-    num_qaoa_runs_per_hp_set = 1
-    optimization_steps_per_run = 20
+    num_qaoa_runs_per_hp_set = 3 # Original value
+    optimization_steps_per_run = 50 # Original value
     ```
     These parameters control the duration and robustness of the QAOA optimization for *each* hyperparameter combination during the tuning process.
     * **`num_qaoa_runs_per_hp_set`**: The number of independent QAOA optimizations performed for each unique set of hyperparameters. Increasing this (e.g., to 3 or 5) improves the chance of escaping local minima and finding a better optimal `(gamma, beta)` parameter set for a given `(q, lambda, p, stepsize)` combination.
     * **`optimization_steps_per_run`**: The number of gradient descent iterations performed by the `AdamOptimizer` for each QAOA run. Increasing this (e.g., to 50 or 100) allows the optimizer more time to converge to a lower cost, potentially yielding better quantum states.
 
-    **Note for Runtime:** Similar to the hyperparameter search space, these values are currently minimized for quick execution. Increasing them will lead to longer runtimes but potentially better optimization results.
-
 * **Quantum Device Shots:**
     ```python
-    dev = qml.device("lightning.qubit", wires=num_qubits, shots=1000)
+    dev = qml.device("lightning.qubit", wires=num_qubits, shots=10000) # Original value
     # ...
     final_sampling_shots_value = 10000
     dev_final_sampling = qml.device("lightning.qubit", wires=num_qubits, shots=final_sampling_shots_value)
     ```
-    The `shots` parameter dictates how many times the quantum circuit is measured when `qml.sample` is called.
-    * `dev` (used during tuning) is set to `1000` shots for faster internal evaluation.
-    * `dev_final_sampling` (used for final plots) is set to `10000` shots to ensure a more statistically accurate representation of the quantum state's probability distribution for the final presented results. A higher `shots` value increases simulation time for sampling.
+    The `shots` parameter dictates how many times the quantum circuit is measured when `qml.sample` is called. Both the device used during tuning and for final analysis are set to `10000` shots for robust statistical results.
 
 ## Understanding the Results and Analysis
 
@@ -385,7 +371,7 @@ This project lays a robust foundation for quantum-enhanced portfolio optimizatio
 
 * **Exploring More Sophisticated QAOA Ansätze:**
     * **Custom Mixer Hamiltonians:** Experiment with alternative mixer Hamiltonians beyond the standard sum of Pauli-X gates (e.g., `qml.mixing.XYMixer()`, or problem-specific mixers). Different mixers might lead to faster convergence or better exploration of the solution space for specific QUBO structures.
-    * **Higher Layer Depths (`p`):** Investigate the impact of increasing the number of QAOA layers (`p`). While this increases computational cost, a deeper circuit might be able to find better approximations to the true optimal solution. Techniques for mitigating barren plateaus (vanishing gradients) in deep QAOA circuits would be relevant here.
+    * **Higher Layer Depths (`p`):** Investigate the impact of increasing the number of QAOA layers (`p`). While this increases computational cost, a deeper circuit might be able to find better approximations to the true optimal solution. Techniques for mitigating barren plateaus (vanishing gradients) would be relevant here.
     * **Parameter Initialization:** Explore more sophisticated strategies for initializing QAOA parameters (e.g., warm-starting from classical solutions, or using angles found from previous similar problems or datasets).
 
 * **Integration with Other Quantum Algorithms:**
@@ -455,3 +441,4 @@ We extend our sincere gratitude to the developers and vibrant communities behind
 * **Scikit-learn:** A comprehensive and widely used machine learning library, specifically for its Principal Component Analysis (PCA) implementation, vital for our factor model.
 
 This project stands as a testament to the power of open collaboration and shared knowledge within the scientific and software development communities.
+
