@@ -1,3 +1,5 @@
+# main_portfolio_optimizer.py
+
 # Import necessary libraries
 import yfinance as yf
 import pandas as pd
@@ -129,8 +131,8 @@ def build_qaoa_cost_hamiltonian(Q_matrix, num_qubits):
                 ops.append(qml.PauliZ(i) @ qml.PauliZ(j))
     return qml.Hamiltonian(coeffs, ops).simplify()
 
-# Device definition with reduced shots for faster sampling during tuning
-dev = qml.device("lightning.qubit", wires=num_qubits, shots=1000)
+# Device definition for tuning, using original 10000 shots
+dev = qml.device("lightning.qubit", wires=num_qubits, shots=10000)
 
 @qml.qnode(dev)
 def qaoa_circuit(params, h_cost, mixer_h, num_qubits, p_layers_circuit):
@@ -272,25 +274,25 @@ def tune_qaoa_parameters(q_risk_aversion_values, lambda_penalty_values, p_layers
                         'best_return': best_return_for_hp_set,
                         'best_risk': best_std_dev_for_hp_set,
                         'best_weights': best_weights_for_hp_set.tolist(),
-                        'cost_history': current_hp_cost_history, # This was already there
-                        'best_params': best_params_for_hp_set.tolist() # ADDED THIS LINE
+                        'cost_history': current_hp_cost_history,
+                        'best_params': best_params_for_hp_set.tolist() # FIX: Storing best_params
                     })
     return pd.DataFrame(tuning_results)
 
 
-# --- Define Hyperparameter Search Space (Optimized for Speed) ---
-q_risk_aversion_values = [0.5]
-lambda_penalty_values = [10.0]
-p_layers_values = [1]
-stepsize_values = [0.05]
+# --- Define Hyperparameter Search Space (ORIGINAL FULL RANGES) ---
+q_risk_aversion_values = [0.1, 0.5, 1.0] # Original full range
+lambda_penalty_values = [5.0, 10.0] # Original full range
+p_layers_values = [1, 2] # Original full range
+stepsize_values = [0.01, 0.05] # Original full range
 
-num_qaoa_runs_per_hp_set = 1 
-optimization_steps_per_run = 20 
+num_qaoa_runs_per_hp_set = 3 # Original value
+optimization_steps_per_run = 50 # Original value
 
 K_target_assets = 2 
 
 print("\n" + "="*70 + "\n")
-print("--- Starting Automated QAOA Hyperparameter Tuning (Optimized for Speed) ---")
+print("--- Starting Automated QAOA Hyperparameter Tuning (FULL RANGES - Will take significant time) ---")
 print(f"Evaluating {len(q_risk_aversion_values) * len(lambda_penalty_values) * len(p_layers_values) * len(stepsize_values)} hyperparameter combinations.")
 print(f"Each combination will run {num_qaoa_runs_per_hp_set} QAOA optimizations for {optimization_steps_per_run} steps.")
 print(f"Target number of selected assets (K): {K_target_assets}")
@@ -330,7 +332,6 @@ if not valid_tuning_results.empty:
     print(f"Selected Assets: {selected_assets_final}")
     print(f"Number of selected assets: {len(selected_assets_final)}")
 
-    ### ADDED FROM CODE B FOR ENHANCED FINAL ANALYSIS ###
     # Recalculate and print the QUBO Matrix for the best hyperparameters
     final_best_q = best_tuned_qaoa_result['q_risk_aversion']
     final_best_l = best_tuned_qaoa_result['lambda_penalty']
@@ -376,7 +377,6 @@ if not valid_tuning_results.empty:
     plt.grid(True)
     plt.show()
     print("\n" + "="*70 + "\n")
-    ### END ADDED FROM CODE B FOR ENHANCED FINAL ANALYSIS ###
 
 
     # --- Optimal Portfolio Weights (QAOA Result - Table) ---
@@ -400,9 +400,8 @@ if not valid_tuning_results.empty:
     plt.show()
     print("\n" + "="*70 + "\n")
 
-    ### ADDED FROM CODE B FOR ENHANCED FINAL ANALYSIS ###
-    # Redefine sampling QNode and device for final plots with specific shots
-    final_sampling_shots_value = 10000 # Use 10000 shots for high-quality final distribution
+    # Redefine sampling QNode and device for final plots with full shots
+    final_sampling_shots_value = 10000 
     dev_final_sampling = qml.device("lightning.qubit", wires=num_qubits, shots=final_sampling_shots_value)
 
     @qml.qnode(dev_final_sampling)
@@ -422,7 +421,7 @@ if not valid_tuning_results.empty:
         return qml.sample(wires=range(num_qubits))
 
     # Retrieve the best_params from the tuning result
-    final_best_params = best_tuned_qaoa_result['best_params'] # Now correctly retrieve best_params
+    final_best_params = best_tuned_qaoa_result['best_params']
 
     print("--- Sampling the QAOA circuit for Overall Best QAOA Portfolio with FULL shots ---")
     final_samples = qaoa_sampling_circuit_final(final_best_params, h_cost=final_H_cost, mixer_h=mixer_h, num_qubits=num_assets, p_layers_circuit=final_best_p_layers)
@@ -438,7 +437,7 @@ if not valid_tuning_results.empty:
 
     print(f"\n--- Evaluating Top Bitstrings from Final Sampling for Overall Best Portfolio ---")
     final_evaluated_bitstrings_data = []
-    top_n_to_evaluate_final = 5 # Number of top bitstrings to display for final evaluation
+    top_n_to_evaluate_final = 5 
     for bitstring, _ in final_counts.most_common(top_n_to_evaluate_final):
         current_selected_assets_indices = [i for i, bit in enumerate(bitstring) if bit == '1']
         current_num_selected_assets = len(current_selected_assets_indices)
@@ -484,7 +483,6 @@ if not valid_tuning_results.empty:
     plt.tight_layout()
     plt.show()
     print("\n" + "="*70 + "\n")
-    ### END ADDED FROM CODE B FOR ENHANCED FINAL ANALYSIS ###
 
 
     # --- Comparison Table: Classical vs. Quantum ---
