@@ -1,0 +1,49 @@
+# .github/workflows/python-package.yml
+
+name: Python Package CI/CD
+
+on:
+  push:
+    branches: [ "main", "master" ] # Triggers the workflow on push to main or master branch
+  pull_request:
+    branches: [ "main", "master" ] # Triggers the workflow on pull request to main or master branch
+  workflow_dispatch: # Allows you to run the workflow manually from the GitHub Actions tab
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest # Specify the operating system for the job
+
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"] # Test against multiple Python versions
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip' # Cache pip dependencies for faster builds
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt # Install dependencies from requirements.txt
+
+    - name: Run a basic script check (placeholder for actual tests)
+      # For a data science/modeling project like this, robust unit tests
+      # for mathematical functions and data pipelines are ideal.
+      # As a quick check, you can run a very minimal part of your main script.
+      # Replace this with proper pytest commands if you add unit tests.
+      run: |
+        echo "Running a minimal script check..."
+        # This command attempts to run the data fetching and PCA part of your script.
+        # It's a very basic smoke test. For full CI, you'd add dedicated tests.
+        python -c "import yfinance as yf; import pandas as pd; from sklearn.decomposition import PCA; \
+                   vanguard_tickers = ['VOO', 'VTI']; start='2022-01-01'; end='2022-01-05'; \
+                   data_raw = yf.download(vanguard_tickers, start=start, end=end, auto_adjust=True); \
+                   data = data_raw['Adj Close']; returns = data.pct_change().dropna(); \
+                   pca = PCA(n_components=1); pca.fit(returns); \
+                   print('Basic script check passed.')"
