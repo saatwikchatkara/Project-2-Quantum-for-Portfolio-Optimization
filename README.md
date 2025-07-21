@@ -5,7 +5,7 @@ QuantumQuantfinanceIIST
 
 ## Team Members
 * **[Saatwik chatkara]** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
-* **[Devang Narula]** - WISER Enrollment ID: [Your WISER ID 2]
+* **[Devang Narula]** - WISER Enrollment ID: [Your WIfsfsfSER ID 2]
 * **[Mohamed Armoon Shaliq]** - WISER Enrollment ID: [Your WISER ID 3]
 
 ## Project Summary
