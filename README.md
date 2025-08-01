@@ -1,12 +1,12 @@
 # Quantum-Enhanced Portfolio Optimization: A Hybrid Factor-QAOA Approach
 
 ## Team Name
-QuantumQuantfinanceIIST
+Quantumatino
 
 ## Team Members
 * **[Saatwik chatkara]** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
-* **[Rishab Agarwal]** - WISER Enrollment ID: [Your WIfsfsfSER ID 2]
-* **[Mohamed Armoon Shaliq]** - WISER Enrollment ID: [Your WISER ID 3]
+* **[Rishab Agarwal]** - WISER Enrollment ID: []
+* **[Narula Devang]** - WISER Enrollment ID: []
 
 ## Project Summary
 
