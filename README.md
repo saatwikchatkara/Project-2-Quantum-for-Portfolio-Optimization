@@ -28,7 +28,6 @@ The project culminates in a comprehensive analysis where the QAOA-optimized port
 
 A detailed presentation covering the project's background, theoretical underpinnings, methodological deep-dive, implementation details, experimental results, and future work is available here:
 **[Link to Project Presentation Deck (e.g., Google Slides, PDF, etc.)]**
-*(Please replace this placeholder with the actual link to your presentation file or online deck.)*
 
 ## Table of Contents
 
