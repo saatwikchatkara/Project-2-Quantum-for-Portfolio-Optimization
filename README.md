@@ -5,7 +5,7 @@ Quantumatino
 
 ## Team Members
 * **[Saatwik chatkara]** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
-* **[Rishab Agarwal]** - WISER Enrollment ID: []
+* **[CaleB]** - WISER Enrollment ID: []
 * **[Narula Devang]** - WISER Enrollment ID: []
 
 ## Project Summary
