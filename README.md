@@ -432,7 +432,7 @@ These freedoms are granted with minimal restrictions, primarily requiring the in
 We extend our sincere gratitude to the developers and vibrant communities behind the following open-source projects. This work would not have been possible without their foundational contributions:
 
 * **PennyLane:** The cornerstone quantum machine learning library that empowers the development and simulation of quantum circuits for variational algorithms.
-* **Yfinance:** For its invaluable service in providing accessible and reliable historical financial market data, enabling robust analysis.
+* **Vanguard:** For its invaluable service in providing accessible and reliable historical financial market data, enabling robust analysis.
 * **NumPy:** The indispensable library for numerical computing in Python, offering powerful array objects and mathematical functions.
 * **Pandas:** For its unparalleled data structures (`DataFrame`) and high-performance data analysis tools, crucial for handling and manipulating financial time series.
 * **Matplotlib:** The versatile plotting library that facilitates the creation of high-quality static, animated, and interactive visualizations to interpret complex results.
