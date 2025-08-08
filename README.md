@@ -5,7 +5,7 @@ collective qubits
 
 ## Team Members
 * **Saatwik chatkara** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
-* **CaleB** - WISER Enrollment ID: [gst-p1RL3gpqF9OQSR2]
+* **Caleb Fianku Quao** - WISER Enrollment ID: [gst-p1RL3gpqF9OQSR2]
 
 ## Project Summary
 
