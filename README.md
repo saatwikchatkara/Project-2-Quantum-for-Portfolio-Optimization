@@ -4,8 +4,8 @@
 collective qubits
 
 ## Team Members
-* **[Saatwik chatkara]** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
-* **[CaleB]** - WISER Enrollment ID: [gst-p1RL3gpqF9OQSR2]
+* **Saatwik chatkara** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
+* **CaleB** - WISER Enrollment ID: [gst-p1RL3gpqF9OQSR2]
 
 ## Project Summary
 
@@ -26,7 +26,7 @@ The project culminates in a comprehensive analysis where the QAOA-optimized port
 ## Project Presentation Deck
 
 A detailed presentation covering the project's background, theoretical underpinnings, methodological deep-dive, implementation details, experimental results, and future work is available here:
-**[Link to Project Presentation Deck (e.g., Google Slides, PDF, etc.)]**
+**[Quantum-Enhanced_Portfolio_Optimization.pdf]**
 
 ## Table of Contents
 
