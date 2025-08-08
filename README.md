@@ -1,7 +1,7 @@
 # Quantum-Enhanced Portfolio Optimization: A Hybrid Factor-QAOA Approach
 
 ## Team Name
-Quantumatino
+collective qubits
 
 ## Team Members
 * **[Saatwik chatkara]** - WISER Enrollment ID: [gst-fnw9Qzp0LIIwBRy]
