@@ -50,8 +50,8 @@ A detailed presentation covering the project's background, theoretical underpinn
 
 This project offers a robust set of features meticulously designed for quantum-enhanced portfolio optimization:
 
-* **Automated Financial Data Ingestion with `yfinance`:**
-    * **Detail:** Seamlessly downloads historical adjusted close prices for a user-defined list of Exchange-Traded Funds (ETFs) or individual stock tickers. This leverages `yfinance`'s efficient API to fetch reliable market data.
+* **Financial Data Ingestion with `Vanguard`:**
+    * **Detail:** Seamlessly downloads historical adjusted close prices for a user-defined list of Exchange-Traded Funds (ETFs) or individual stock tickers. This leverages `Vanguard`'s reliable market data.
     * **Benefit:** Ensures that the optimization process is fed with up-to-date and consistent financial information, providing a flexible and easily adaptable data foundation for different asset universes or timeframes.
 
 * **Robust Factor Model Implementation via PCA:**
@@ -262,20 +262,13 @@ The project is designed with flexibility in mind, allowing users to easily modif
 
 * **Asset Universe:**
     ```python
-    vanguard_tickers = ["VOO", "VTI", "BND", "VXUS", "VGT"]
+    asset_tickers 
     ```
-    This list can be modified to include any other stock or ETF tickers supported by `yfinance`. Ensure that the chosen assets have sufficient historical data for the specified `start_date` and `end_date`.
-
-* **Historical Data Range:**
-    ```python
-    start_date = "2018-01-01"
-    end_date = "2023-12-31"
-    ```
-    Adjust these dates to analyze different market periods or to leverage a longer/shorter data history. Be mindful that very long periods might introduce issues of non-stationarity in asset returns, while very short periods might not provide enough data for robust statistical analysis.
+    This list can be modified to include any other stock or ETF tickers supported by `Vanguard`. 
 
 * **Factor Model Parameters:**
     ```python
-    num_factors = 2 # For 5 assets, 2-3 factors is a reasonable starting point.
+    num_factors = 1 # For 5 assets, 2-3 factors is a reasonable starting point.
     ```
     This integer determines the number of principal components to extract in the PCA step. The choice of `num_factors` is a trade-off: too few might not capture enough systematic risk, while too many can reintroduce noise or overfit to historical patterns. A good starting point is often to select enough factors to explain 80-90% of the total variance in returns, as indicated by `pca.explained_variance_ratio_.sum()`.
 
